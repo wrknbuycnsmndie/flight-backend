@@ -49,8 +49,40 @@ class DatabaseMigrationIntegrationTest {
                 """, Integer.class);
 
         assertThat(tableCount).isEqualTo(4);
-        assertThat(flyway.info().applied()).hasSize(1);
+        assertThat(flyway.info().applied()).hasSize(2);
         assertThat(flyway.info().applied()[0].getVersion().getVersion()).isEqualTo("1");
+        assertThat(flyway.info().applied()[1].getVersion().getVersion()).isEqualTo("2");
+    }
+
+    @Test
+    void loadsExpectedSeedData() {
+        assertThat(countRows("airports")).isEqualTo(5);
+        assertThat(countRows("aircrafts")).isEqualTo(3);
+        assertThat(countRows("flights")).isEqualTo(10);
+        assertThat(countRows("passengers")).isEqualTo(20);
+
+        Integer orphanedFlights = jdbcTemplate.queryForObject("""
+                SELECT COUNT(*)
+                FROM flights f
+                LEFT JOIN airports departure ON departure.id = f.departure_airport_id
+                LEFT JOIN airports arrival ON arrival.id = f.arrival_airport_id
+                LEFT JOIN aircrafts aircraft ON aircraft.id = f.aircraft_id
+                WHERE departure.id IS NULL OR arrival.id IS NULL OR aircraft.id IS NULL
+                """, Integer.class);
+
+        Integer flightsWithInvalidPassengerCount = jdbcTemplate.queryForObject("""
+                SELECT COUNT(*)
+                FROM (
+                    SELECT f.id
+                    FROM flights f
+                    LEFT JOIN passengers p ON p.flight_id = f.id
+                    GROUP BY f.id
+                    HAVING COUNT(p.id) NOT BETWEEN 2 AND 3
+                ) invalid_flights
+                """, Integer.class);
+
+        assertThat(orphanedFlights).isZero();
+        assertThat(flightsWithInvalidPassengerCount).isZero();
     }
 
     @Test
@@ -89,16 +121,16 @@ class DatabaseMigrationIntegrationTest {
 
     @Test
     void cascadesPassengerDeletionWithFlightDeletion() {
-        jdbcTemplate.update("INSERT INTO airports (code, name, city) VALUES ('SVO', 'Sheremetyevo', 'Moscow')");
-        jdbcTemplate.update("INSERT INTO airports (code, name, city) VALUES ('LED', 'Pulkovo', 'Saint Petersburg')");
-        jdbcTemplate.update("INSERT INTO aircrafts (model, capacity) VALUES ('Boeing 737', 180)");
+        jdbcTemplate.update("INSERT INTO airports (code, name, city) VALUES ('AAA', 'Test Departure Airport', 'Test City A')");
+        jdbcTemplate.update("INSERT INTO airports (code, name, city) VALUES ('BBB', 'Test Arrival Airport', 'Test City B')");
+        jdbcTemplate.update("INSERT INTO aircrafts (model, capacity) VALUES ('Test Aircraft', 180)");
 
         Long departureAirportId = jdbcTemplate.queryForObject(
-                "SELECT id FROM airports WHERE code = 'SVO'", Long.class);
+                "SELECT id FROM airports WHERE code = 'AAA'", Long.class);
         Long arrivalAirportId = jdbcTemplate.queryForObject(
-                "SELECT id FROM airports WHERE code = 'LED'", Long.class);
+                "SELECT id FROM airports WHERE code = 'BBB'", Long.class);
         Long aircraftId = jdbcTemplate.queryForObject(
-                "SELECT id FROM aircrafts WHERE model = 'Boeing 737'", Long.class);
+                "SELECT id FROM aircrafts WHERE model = 'Test Aircraft'", Long.class);
 
         jdbcTemplate.update("""
                 INSERT INTO flights (
@@ -109,15 +141,15 @@ class DatabaseMigrationIntegrationTest {
                     arrival_time,
                     aircraft_id
                 ) VALUES (?, ?, ?, ?, ?, ?)
-                """, "SU123", departureAirportId, arrivalAirportId,
+                """, "TEST123", departureAirportId, arrivalAirportId,
                 Timestamp.valueOf("2026-08-01 10:00:00"),
                 Timestamp.valueOf("2026-08-01 12:30:00"), aircraftId);
 
         Long flightId = jdbcTemplate.queryForObject(
-                "SELECT id FROM flights WHERE flight_number = 'SU123'", Long.class);
+                "SELECT id FROM flights WHERE flight_number = 'TEST123'", Long.class);
         jdbcTemplate.update("""
                 INSERT INTO passengers (first_name, last_name, passport_number, flight_id)
-                VALUES ('Ivan', 'Petrov', '4010123456', ?)
+                VALUES ('Test', 'Passenger', 'TEST-PASSPORT-1', ?)
                 """, flightId);
 
         jdbcTemplate.update("DELETE FROM flights WHERE id = ?", flightId);
@@ -125,6 +157,9 @@ class DatabaseMigrationIntegrationTest {
         Integer passengerCount = jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM passengers WHERE flight_id = ?", Integer.class, flightId);
         assertThat(passengerCount).isZero();
+
+        jdbcTemplate.update("DELETE FROM aircrafts WHERE model = 'Test Aircraft'");
+        jdbcTemplate.update("DELETE FROM airports WHERE code IN ('AAA', 'BBB')");
     }
 
     @Test
@@ -138,7 +173,11 @@ class DatabaseMigrationIntegrationTest {
         flyway.migrate();
 
         Integer migrationCount = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM flyway_schema_history WHERE version = '1'", Integer.class);
-        assertThat(migrationCount).isEqualTo(1);
+                "SELECT COUNT(*) FROM flyway_schema_history", Integer.class);
+        assertThat(migrationCount).isEqualTo(2);
+    }
+
+    private int countRows(String tableName) {
+        return jdbcTemplate.queryForObject("SELECT COUNT(*) FROM " + tableName, Integer.class);
     }
 }
