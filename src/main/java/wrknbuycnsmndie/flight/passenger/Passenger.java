@@ -37,4 +37,17 @@ public class Passenger {
     @JoinColumn(name = "flight_id", nullable = false)
     private Flight flight;
 
+    public static Passenger create(
+            String firstName,
+            String lastName,
+            String passportNumber,
+            Flight flight) {
+        Passenger passenger = new Passenger();
+        passenger.firstName = firstName;
+        passenger.lastName = lastName;
+        passenger.passportNumber = passportNumber;
+        passenger.flight = flight;
+        return passenger;
+    }
+
 }
