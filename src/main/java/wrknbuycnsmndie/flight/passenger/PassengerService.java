@@ -3,6 +3,7 @@ package wrknbuycnsmndie.flight.passenger;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import wrknbuycnsmndie.flight.common.exception.BusinessConflictException;
 import wrknbuycnsmndie.flight.common.exception.BusinessValidationException;
 import wrknbuycnsmndie.flight.common.exception.ResourceNotFoundException;
 import wrknbuycnsmndie.flight.flight.Flight;
@@ -31,7 +32,7 @@ public class PassengerService {
                 .orElseThrow(() -> new ResourceNotFoundException("Flight not found: " + flightId));
 
         if (passengerRepository.existsByPassportNumber(request.passportNumber())) {
-            throw new BusinessValidationException("Passport number already exists: " + request.passportNumber());
+            throw new BusinessConflictException("Passport number already exists: " + request.passportNumber());
         }
         if (flight.getPassengers().size() >= flight.getAircraft().getCapacity()) {
             throw new BusinessValidationException("Flight has reached the aircraft capacity");

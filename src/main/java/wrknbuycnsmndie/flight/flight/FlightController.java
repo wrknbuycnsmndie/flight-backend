@@ -4,6 +4,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,7 +33,7 @@ public class FlightController {
     }
 
     @GetMapping("/{id}")
-    public FlightDetailsResponse getById(@PathVariable Long id) {
+    public FlightDetailsResponse getById(@PathVariable @Positive Long id) {
         return flightService.findById(id);
     }
 
@@ -44,13 +45,13 @@ public class FlightController {
 
     @PutMapping("/{id}")
     public FlightDetailsResponse update(
-            @PathVariable Long id,
+            @PathVariable @Positive Long id,
             @Valid @RequestBody UpdateFlightRequest request) {
         return flightService.update(id, request);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable @Positive Long id) {
         flightService.delete(id);
         return ResponseEntity.noContent().build();
     }
