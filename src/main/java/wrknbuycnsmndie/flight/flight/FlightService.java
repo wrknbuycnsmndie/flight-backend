@@ -96,6 +96,13 @@ public class FlightService {
         return toDetailsResponse(flightRepository.save(flight));
     }
 
+    @Transactional
+    public void delete(Long id) {
+        Flight flight = flightRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Flight not found: " + id));
+        flightRepository.delete(flight);
+    }
+
     private RelatedEntities validateAndLoadRelatedEntities(CreateFlightRequest request) {
         return validateAndLoadRelatedEntities(
                 request.departureAirportId(),
