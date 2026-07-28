@@ -99,7 +99,8 @@ class PassengerIntegrationTest {
         mockMvc.perform(post("/api/flights/1/passengers").contextPath("/api")
                         .contentType(APPLICATION_JSON)
                         .content(passengerRequest("Another", "John", "4010000001")))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.title").value("Conflict"))
                 .andExpect(jsonPath("$.detail").value("Passport number already exists: 4010000001"));
     }
 
@@ -140,6 +141,15 @@ class PassengerIntegrationTest {
         mockMvc.perform(delete("/api/passengers/999").contextPath("/api"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.detail").value("Passenger not found: 999"));
+    }
+
+    @Test
+    void rejectsInvalidFlightPathParameter() throws Exception {
+        mockMvc.perform(get("/api/flights/-1/passengers").contextPath("/api"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.title").value("Validation Failed"))
+                .andExpect(jsonPath("$.errors.flightId").exists())
+                .andExpect(jsonPath("$.path").value("/api/flights/-1/passengers"));
     }
 
     private String passengerRequest(String firstName, String lastName, String passportNumber) {

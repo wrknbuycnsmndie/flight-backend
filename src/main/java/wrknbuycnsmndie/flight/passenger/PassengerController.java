@@ -1,6 +1,7 @@
 package wrknbuycnsmndie.flight.passenger;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,20 +22,20 @@ public class PassengerController {
     private final PassengerService passengerService;
 
     @GetMapping("/flights/{flightId}/passengers")
-    public List<PassengerResponse> getByFlight(@PathVariable Long flightId) {
+    public List<PassengerResponse> getByFlight(@PathVariable @Positive Long flightId) {
         return passengerService.findByFlightId(flightId);
     }
 
     @PostMapping("/flights/{flightId}/passengers")
     public ResponseEntity<PassengerResponse> create(
-            @PathVariable Long flightId,
+            @PathVariable @Positive Long flightId,
             @Valid @RequestBody CreatePassengerRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(passengerService.create(flightId, request));
     }
 
     @DeleteMapping("/passengers/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable @Positive Long id) {
         passengerService.delete(id);
         return ResponseEntity.noContent().build();
     }
