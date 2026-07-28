@@ -6,9 +6,14 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "aircrafts")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Aircraft {
 
     @Id
@@ -21,18 +26,4 @@ public class Aircraft {
     @Column(nullable = false)
     private Integer capacity;
 
-    protected Aircraft() {
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getModel() {
-        return model;
-    }
-
-    public Integer getCapacity() {
-        return capacity;
-    }
 }

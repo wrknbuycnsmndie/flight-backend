@@ -6,9 +6,14 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "airports")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Airport {
 
     @Id
@@ -24,22 +29,4 @@ public class Airport {
     @Column(nullable = false)
     private String city;
 
-    protected Airport() {
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getCity() {
-        return city;
-    }
 }
