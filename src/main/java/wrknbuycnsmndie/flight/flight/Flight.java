@@ -18,6 +18,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -52,6 +53,33 @@ public class Flight {
     private Aircraft aircraft;
 
     @OneToMany(mappedBy = "flight", fetch = FetchType.LAZY)
-    private List<Passenger> passengers;
+    private List<Passenger> passengers = new ArrayList<>();
+
+    public static Flight create(
+            String flightNumber,
+            Airport departureAirport,
+            Airport arrivalAirport,
+            LocalDateTime departureTime,
+            LocalDateTime arrivalTime,
+            Aircraft aircraft) {
+        Flight flight = new Flight();
+        flight.update(flightNumber, departureAirport, arrivalAirport, departureTime, arrivalTime, aircraft);
+        return flight;
+    }
+
+    public void update(
+            String flightNumber,
+            Airport departureAirport,
+            Airport arrivalAirport,
+            LocalDateTime departureTime,
+            LocalDateTime arrivalTime,
+            Aircraft aircraft) {
+        this.flightNumber = flightNumber;
+        this.departureAirport = departureAirport;
+        this.arrivalAirport = arrivalAirport;
+        this.departureTime = departureTime;
+        this.arrivalTime = arrivalTime;
+        this.aircraft = aircraft;
+    }
 
 }
