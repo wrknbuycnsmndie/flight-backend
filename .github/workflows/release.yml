@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  IMAGE_NAME: wrknbuycnsmndie/flight-backend
+  IMAGE_NAME: worknbuyconsumendie/flight-backend
 
 permissions:
   contents: read
