@@ -8,5 +8,7 @@ public interface PassengerRepository extends JpaRepository<Passenger, Long> {
 
     List<Passenger> findAllByFlightIdOrderByIdAsc(Long flightId);
 
+    long countByFlightId(Long flightId);
+
     boolean existsByPassportNumber(String passportNumber);
 }

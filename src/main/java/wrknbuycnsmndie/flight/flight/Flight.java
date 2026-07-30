@@ -10,6 +10,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Column;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import wrknbuycnsmndie.flight.aircraft.Aircraft;
 import wrknbuycnsmndie.flight.airport.Airport;
 import wrknbuycnsmndie.flight.passenger.Passenger;
@@ -53,6 +55,7 @@ public class Flight {
     private Aircraft aircraft;
 
     @OneToMany(mappedBy = "flight", fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private List<Passenger> passengers = new ArrayList<>();
 
     public static Flight create(
