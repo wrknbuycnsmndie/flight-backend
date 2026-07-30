@@ -25,5 +25,5 @@ public record UpdateFlightRequest(
 
         @NotNull(message = "Aircraft is required")
         Long aircraftId
-) {
+) implements FlightRequestData {
 }
