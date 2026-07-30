@@ -13,6 +13,7 @@ import wrknbuycnsmndie.flight.airport.AirportResponse;
 import wrknbuycnsmndie.flight.common.exception.BusinessValidationException;
 import wrknbuycnsmndie.flight.common.dto.PageResponse;
 import wrknbuycnsmndie.flight.common.exception.ResourceNotFoundException;
+import wrknbuycnsmndie.flight.passenger.PassengerRepository;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -25,6 +26,7 @@ public class FlightService {
     private final FlightRepository flightRepository;
     private final AirportRepository airportRepository;
     private final AircraftRepository aircraftRepository;
+    private final PassengerRepository passengerRepository;
 
     public PageResponse<FlightListItemResponse> findAll(Pageable pageable) {
         Page<FlightListProjection> page = flightRepository.findAllForList(pageable);
@@ -70,7 +72,7 @@ public class FlightService {
                 .orElseThrow(() -> new ResourceNotFoundException("Flight not found: " + id));
         RelatedEntities related = validateAndLoadRelatedEntities(request);
 
-        if (related.aircraft().getCapacity() < flight.getPassengers().size()) {
+        if (related.aircraft().getCapacity() < passengerRepository.countByFlightId(id)) {
             throw new BusinessValidationException("Aircraft capacity is below the current passenger count");
         }
 
@@ -144,7 +146,7 @@ public class FlightService {
                         flight.getAircraft().getId(),
                         flight.getAircraft().getModel(),
                         flight.getAircraft().getCapacity()),
-                flight.getPassengers().size());
+                passengerRepository.countByFlightId(flight.getId()));
     }
 
     private AirportResponse toAirportResponse(Airport airport) {
