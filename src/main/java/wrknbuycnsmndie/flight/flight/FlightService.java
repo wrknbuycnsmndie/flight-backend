@@ -48,19 +48,7 @@ public class FlightService {
     public FlightDetailsResponse findById(Long id) {
         Flight flight = flightRepository.findWithDetailsById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Flight not found: " + id));
-
-        return new FlightDetailsResponse(
-                flight.getId(),
-                flight.getFlightNumber(),
-                toAirportResponse(flight.getDepartureAirport()),
-                toAirportResponse(flight.getArrivalAirport()),
-                flight.getDepartureTime(),
-                flight.getArrivalTime(),
-                new AircraftResponse(
-                        flight.getAircraft().getId(),
-                        flight.getAircraft().getModel(),
-                        flight.getAircraft().getCapacity()),
-                flight.getPassengers().size());
+        return toDetailsResponse(flight);
     }
 
     @Transactional
@@ -93,7 +81,7 @@ public class FlightService {
                 request.departureTime(),
                 request.arrivalTime(),
                 related.aircraft());
-        return toDetailsResponse(flightRepository.save(flight));
+        return toDetailsResponse(flight);
     }
 
     @Transactional
